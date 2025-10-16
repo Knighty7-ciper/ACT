@@ -5,7 +5,34 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 
-export default function ConverterPage() {
+import { createClient } from "@/lib/supabase/server"
+
+async function getConverterData() {
+  try {
+    const supabase = await createClient()
+    const { data: currencies } = await supabase
+      .from("currencies")
+      .select("code,name,symbol")
+      .eq("is_active", true)
+      .order("code")
+
+    const { data: rates } = await supabase
+      .from("exchange_rates")
+      .select("id,currency_code,rate_to_act,updated_at,currency(name,symbol)")
+      .order("updated_at", { ascending: false })
+
+    return {
+      currencies: currencies || [],
+      rates: rates || [],
+    }
+  } catch (e) {
+    return { currencies: [], rates: [] }
+  }
+}
+
+export default async function ConverterPage() {
+  const { currencies, rates } = await getConverterData()
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b-4 border-primary bg-background/95 backdrop-blur-lg shadow-lg">
@@ -53,7 +80,7 @@ export default function ConverterPage() {
               <CardTitle className="font-sans text-2xl">Quick Convert</CardTitle>
             </CardHeader>
             <CardContent>
-              <CurrencyConverter />
+              <CurrencyConverter currencies={currencies} />
             </CardContent>
           </Card>
 
@@ -62,7 +89,7 @@ export default function ConverterPage() {
               <CardTitle className="font-sans text-2xl">All Exchange Rates</CardTitle>
             </CardHeader>
             <CardContent>
-              <ExchangeRatesTable />
+              <ExchangeRatesTable rates={rates} />
             </CardContent>
           </Card>
         </div>
