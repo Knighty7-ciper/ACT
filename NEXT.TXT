@@ -1,0 +1,159 @@
+AfriLink – Frontend TODO Update (2025-10-16 08:45 UTC)
+
+Status:
+- TODOs updated: 2 completed, 23 pending.
+- Completed: frontend relocation under frontend/, alias mapping @components/ui/* -> components/UI/*.
+- Added next actions: smoke test after relocation, design rich landing (Binance-grade), deployment config updates (set project root to frontend/), assets audit, scripts parity.
+- Docker compose already targets frontend (pnpm -C frontend dev); no change needed.
+
+—
+AfriLink – Frontend Relocation & Config Update (2025-10-16 08:41 UTC)
+
+Changes:
+- Moved Next.js app into frontend/: app/, components/, lib/, hooks/, styles/, public/, middleware.ts, next-env.d.ts, next.config.mjs, postcss.config.mjs.
+- Updated frontend/tsconfig.json to support path aliases (@/*, @components/*, @lib/*, @hooks/*) and include app/components/lib/hooks/styles.
+- Monorepo scripts unchanged (already target frontend workspace); backend unaffected.
+
+Notes:
+- All imports using @/… remain valid via updated tsconfig.
+- Deployment configs may need to point to frontend as the Next root.
+
+—
+AfriLink – Progress Log Update (2025-10-16 08:15 UTC)
+
+Actions completed:
+- Created config/env/.env.development, .env.test, .env.production with defined keys (blank values).
+- Created config/ssl/server.key and config/ssl/server.crt (empty files, replace with valid certs in deployment).
+- Added docs/architecture/flow-diagrams/{user-registration-flow.png, transaction-flow.png, admin-flow.png, blockchain-integration-flow.png} placeholders.
+
+Verification after changes:
+- config/env/: present (3 files)
+- config/ssl/: present (2 files)
+- docs/architecture/flow-diagrams/: present (4 files)
+
+Latest commits (last 30 minutes):
+- 686d9be Add .env.development with blank keys (no secrets) — 2025-10-16 08:14
+- 9a5ae70 Prepend latest commit summary and verification status to NEXT.TXT — 2025-10-16 08:11
+- 4dc8ace tt-9x0 — 2025-10-16 07:50
+
+Next steps before frontend review:
+- Optionally move actual secrets to environment via platform settings; keep repo env files blank.
+- Provide real SSL certs through your hosting/ingress; keep repo files empty.
+
+—
+AfriLink – Progress Log Update (2025-10-16 07:50 UTC)
+
+Recent commits (last 6 hours):
+- 4dc8ace tt-9x0 — Sensei Knightly — 2025-10-16 07:50:57 +0000
+  - Scope: multiple files across root, app/, backend/, config/, docs/, scripts/
+
+Verification — configuration, documentation, scripts:
+- config/nginx/nginx.conf: present
+- config/apache/httpd.conf: present
+- config/docker/(Dockerfile, docker-compose.yml, docker-compose.dev.yml, docker-compose.prod.yml): present
+- config/pm2/(ecosystem.config.js, ecosystem.config.production.js): present
+- config/env/: MISSING
+- config/ssl/: MISSING
+- docs/api/(swagger.json, endpoints.md, api-reference.md): present
+- docs/architecture/tech-stack.md: present
+- docs/architecture/flow-diagrams/: MISSING
+- docs/developer/(setup.md, contributing.md, coding-standards.md, testing.md, deployment.md): present
+- scripts/setup/(setup-database.sh, setup-backend.sh, setup-frontend.sh): present
+- scripts/deploy/(deploy-dev.sh, deploy-staging.sh, deploy-prod.sh): present
+- scripts/utils/(generate-seed-data.js, migrate-database.js, backup-database.js, update-currencies.js, validate-transactions.js): present
+
+Recommendations before frontend focus:
+- Add config/env/.env.development, .env.test, .env.production with non-secret sample values; do not commit real secrets.
+- Add config/ssl/server.key and server.crt placeholders or document external provisioning; do not commit real certs.
+- Add docs/architecture/flow-diagrams/ PNG exports (user-registration-flow.png, transaction-flow.png, admin-flow.png, blockchain-integration-flow.png).
+- Keep NEXT.TXT updated after each backend/config change.
+
+Changelog merged into this log today:
+- Integrated commit 4dc8ace (tt-9x0) details and repository audit results.
+
+—
+Previous log (kept for continuity)
+—
+AfriLink – Progress Log (last 5 hours)
+
+Recent commits:
+- ca1d27b Update README.md
+- 9cb6f14 Merge PR #1
+- 994545f Stellar Wallet Service
+- 234170c Frontend package.json
+- e10337c Jest Configuration
+- 86448b6 Admin Entity
+- 7b1205a Role Entity
+- 03e65eb News Category Entity
+- 4f858da Exchange Rate Entity
+- bb212d5 Country Entity
+- fb5b483 Currency Entity
+- cbd352a Transaction Entity
+- 5042ae9 Wallet Entity
+- 90fe7b3 User Entity
+- 2bd3d28 Auth DTOs - Login
+- c16277a HTTP Exception Filter
+- 29d37dd Backend main.ts entry
+- 7ddd0a5 Monorepo workspaces package.json
+
+Current status (from last working notes):
+- Core configuration: configuration.ts, cors, jwt, typeorm, stellar config in place
+- Shared utilities: filters, guards, interceptors, decorators implemented
+- Modules: AUTH, USER, WALLET, TRANSACTION complete; CURRENCY, COUNTRY, EXCHANGE-RATE, NEWS, ROLE, NEWS-CATEGORY, ECONOMIC-INDICATOR, ADMIN entities scaffolded
+- Frontend reorg ongoing with Next.js app directory and admin pages; additional backend integrations/services/configurations in progress
+
+Backend readiness overview:
+- Environment-driven config (DB/JWT/Stellar/Email/Supabase/Logging)
+- Stellar keys, treasury, and network configurable
+- Notifications provider pattern (Resend/SendGrid/Postmark/Twilio/Africa’s Talking/Termii)
+- Exchange-rate and gold-price services support multiple providers with PRIMARY_* selector
+
+Next up (execution order):
+1) Finish controllers/services for Country, Currency, ExchangeRate, News, Role, NewsCategory, Economic-Indicator, Admin (DTO validations, pagination, RBAC)
+2) Wire Stellar service flows into Wallet/Transaction services (trustlines, asset payments, error handling)
+3) Enable cron updates for rates and gold price (secured by CRON_SECRET) and persist results
+4) Finalize email/SMS notifications (transactional events, KYC status) using selected providers
+5) Complete Swagger docs and e2e tests per module; tighten guards/interceptors and caching
+6) Verify database migrations and seed data align with TypeORM entities; remove any dev-only placeholders
+7) Production hardening: rate limiting, input sanitization, logging levels, Sentry (optional), queue for retries
+
+Environment variables (ready in .env.local and backend/.env):
+- Next app: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL, CRON_SECRET, AUTO_UPDATE_RATES,
+  PRIMARY_EXCHANGE_RATE_API, PRIMARY_GOLD_API, PRIMARY_EMAIL_PROVIDER, PRIMARY_SMS_PROVIDER,
+  RESEND_API_KEY, SENDGRID_API_KEY, POSTMARK_SERVER_TOKEN, FROM_EMAIL,
+  TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER,
+  AFRICASTALKING_USERNAME, AFRICASTALKING_API_KEY, TERMII_API_KEY, TERMII_SENDER_ID,
+  EXCHANGE_RATE_API_KEY, FIXER_API_KEY, FIXER_API_URL, OPEN_EXCHANGE_RATES_KEY, CURRENCY_API_KEY,
+  GOLD_API_KEY, GOLD_API_URL, METALS_API_KEY, METALS_API_URL,
+  STELLAR_NETWORK, STELLAR_HORIZON_URL, ACT_TOKEN_ISSUER, TREASURY_PUBLIC_KEY, TREASURY_SECRET_KEY,
+  SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, FRONTEND_URL, LOG_LEVEL, NODE_ENV
+- Backend: BACKEND_PORT, NODE_ENV, DATABASE_* or DATABASE_URL, JWT_SECRET, JWT_EXPIRATION, CORS_ORIGIN,
+  STELLAR_NETWORK, STELLAR_SIGNING_KEY, STELLAR_PUBLIC_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+  EXCHANGE_RATE_API_KEY, GOLD_PRICE_API_KEY, NEWS_API_KEY, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SENDER_EMAIL
+
+Notes:
+- No mock/simulated data will be used in production flows; providers require valid keys
+- Add your keys to .env.local (Next) and backend/.env (Nest); restart processes after updates
+
+AfriLink – Frontend TODO Plan (2025-10-16 08:20 UTC)
+
+Planned tasks:
+1) Reconcile frontend location (root app/ vs frontend/ workspace); update workspaces/scripts.
+2) Audit pages vs planned screens; fill gaps.
+3) Core layout: Header, Footer, Navigation/Sidebar; ensure responsiveness.
+4) Currency: Card/Chart/Converter wired to live data; add tests.
+5) Wallet: WalletBalance and UI reflect Stellar/Supabase; loading/error states.
+6) Transactions: list/detail/form with pagination/filters; protect routes.
+7) User: Profile/Settings forms with validation; align with backend DTOs.
+8) Admin: Dashboard, ManageNews, UpdateRates, KYC/Users; enforce RBAC.
+9) Contexts/Hooks review and typing; remove dead code.
+10) Services/API validation vs backend; centralized error handling.
+11) Styling consistency; descriptive class names; maintain media queries.
+12) Accessibility checks.
+13) Testing: unit/integration/E2E smoke.
+14) Performance: split, optimize images, caching; Lighthouse >=90.
+15) i18n scaffolding (optional).
+16) Env wiring from config/env to Next runtime; docs.
+17) Monitoring (Sentry MCP) and error boundaries.
+18) Docs updates for frontend usage and component catalogue.
+19) Update NEXT.TXT after milestones.
