@@ -22,7 +22,7 @@ export class WalletController {
     @Body() createWalletDto: CreateWalletDto,
     @Req() request: Request,
   ): Promise<WalletResponseDto> {
-    const userId = request['user'].userId;
+    const userId = (request['user']?.userId ?? '') as string;
     return this.walletService.create(userId, createWalletDto);
   }
 
@@ -30,7 +30,7 @@ export class WalletController {
   @ApiOperation({ summary: 'Get all wallets for user' })
   @ApiResponse({ status: 200, description: 'Wallets retrieved', type: [WalletResponseDto] })
   async findAll(@Req() request: Request): Promise<WalletResponseDto[]> {
-    const userId = request['user'].userId;
+    const userId = (request['user']?.userId ?? '') as string;
     return this.walletService.findAllByUser(userId);
   }
 
