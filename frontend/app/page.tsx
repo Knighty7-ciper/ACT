@@ -21,7 +21,7 @@ async function getMarketData() {
       .select("*")
       .order("updated_at", { ascending: false })
 
-    const { count: userCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
+    const { count: userCount } = await supabase.from("users").select("*", { count: "exact", head: true })
 
     const { count: transactionCount } = await supabase
       .from("transactions")
@@ -29,30 +29,30 @@ async function getMarketData() {
 
     // Map currencies with real rates and flags
     const currencyMap: Record<string, string> = {
-    NGN: "🇳🇬",
-    KES: "🇰🇪",
-    ZAR: "🇿🇦",
-    GHS: "🇬🇭",
-    EGP: "🇪🇬",
-    TZS: "🇹🇿",
-    UGX: "🇺🇬",
-    MAD: "🇲🇦",
-    ETB: "🇪🇹",
-    XOF: "🇸🇳",
-    USD: "🇺🇸",
-    EUR: "🇪🇺",
-    GBP: "🇬🇧",
-  }
+      NGN: "🇳🇬",
+      KES: "🇰🇪",
+      ZAR: "🇿🇦",
+      GHS: "🇬🇭",
+      EGP: "🇪🇬",
+      TZS: "🇹🇿",
+      UGX: "🇺🇬",
+      MAD: "🇲🇦",
+      ETB: "🇪🇹",
+      XOF: "🇸🇳",
+      USD: "🇺🇸",
+      EUR: "🇪🇺",
+      GBP: "🇬🇧",
+    }
 
     const currenciesWithRates =
       currencies?.map((currency) => {
-        const rate = rates?.find((r) => r.from_currency_code === "ACT" && r.to_currency_code === currency.code)
+        const rateRow = rates?.find((r) => r.from_currency === "ACT" && r.to_currency === currency.code)
         return {
           code: currency.code,
           name: currency.name,
           symbol: currency.symbol,
           flag: currencyMap[currency.code] || "🏳️",
-          rate: rate ? Number.parseFloat(rate.rate) : 1.0,
+          rate: rateRow ? Number(rateRow.rate) : 1.0,
           change: Math.random() * 4 - 2,
         }
       }) || []
@@ -160,7 +160,7 @@ export default async function HomePage() {
                       ACT / {currency.code}
                     </div>
                     <div className="font-mono text-4xl font-black tabular-nums">
-                      <AnimatedCounter value={currency.rate} decimals={4} />
+                      <AnimatedCounter end={currency.rate} decimals={4} />
                     </div>
                     <div className="mt-2 font-sans text-xs text-muted-foreground">{currency.name}</div>
                   </div>
@@ -190,7 +190,7 @@ export default async function HomePage() {
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-center animate-slide-up">
                 <div className="mb-2 font-mono text-5xl font-black tabular-nums text-primary">
-                  <AnimatedCounter value={stats.totalUsers} />
+                  <AnimatedCounter end={stats.totalUsers} />
                 </div>
                 <div className="font-sans text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Active Users
@@ -198,7 +198,7 @@ export default async function HomePage() {
               </div>
               <div className="text-center animate-slide-up" style={{ animationDelay: "100ms" }}>
                 <div className="mb-2 font-mono text-5xl font-black tabular-nums text-secondary">
-                  <AnimatedCounter value={stats.totalTransactions} />
+                  <AnimatedCounter end={stats.totalTransactions} />
                 </div>
                 <div className="font-sans text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Total Transactions
@@ -206,7 +206,7 @@ export default async function HomePage() {
               </div>
               <div className="text-center animate-slide-up" style={{ animationDelay: "200ms" }}>
                 <div className="mb-2 font-mono text-5xl font-black tabular-nums text-accent">
-                  $<AnimatedCounter value={stats.actPrice} decimals={2} />
+                  $<AnimatedCounter end={stats.actPrice} decimals={2} />
                 </div>
                 <div className="font-sans text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   ACT Token Price (USD)
@@ -227,7 +227,15 @@ export default async function HomePage() {
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {currencies.map((currency, index) => (
-                <ForexRateDisplay key={currency.code} {...currency} style={{ animationDelay: `${index * 50}ms` }} />
+                <ForexRateDisplay
+                  key={currency.code}
+                  fromCurrency="ACT"
+                  toCurrency={currency.code}
+                  rate={currency.rate}
+                  flag={currency.flag}
+                  change={currency.change}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                />
               ))}
             </div>
           </div>
