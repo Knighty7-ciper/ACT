@@ -1,1 +1,1 @@
-export * from "../../../frontend/lib/contexts/ThemeContext"
+export * from "../../lib/contexts/ThemeContext"
