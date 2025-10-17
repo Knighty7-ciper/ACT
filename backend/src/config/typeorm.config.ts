@@ -41,8 +41,11 @@ export const typeormConfig = (
 
   const url =
     configService.get<string>('DATABASE_URL') ||
+    process.env.DATABASE_URL ||
     configService.get<string>('POSTGRES_URL') ||
-    configService.get<string>('POSTGRES_URL_NON_POOLING');
+    process.env.POSTGRES_URL ||
+    configService.get<string>('POSTGRES_URL_NON_POOLING') ||
+    process.env.POSTGRES_URL_NON_POOLING;
   if (url) {
     return {
       type: 'postgres',
