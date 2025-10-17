@@ -26,7 +26,7 @@ export class TransactionController {
     @Body() createTransactionDto: CreateTransactionDto,
     @Req() request: Request,
   ): Promise<TransactionResponseDto> {
-    const userId = request['user'].userId;
+    const userId = (request['user']?.userId ?? '') as string;
     return this.transactionService.create(userId, createTransactionDto);
   }
 
@@ -38,7 +38,7 @@ export class TransactionController {
     @Query('limit') limit: number = 10,
     @Req() request: Request,
   ) {
-    const userId = request['user'].userId;
+    const userId = (request['user']?.userId ?? '') as string;
     return this.transactionService.getHistory(userId, page, limit);
   }
 
