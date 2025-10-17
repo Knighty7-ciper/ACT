@@ -15,7 +15,7 @@ export class ExchangeRateFetcherService {
     @InjectRepository(ExchangeRateEntity)
     private exchangeRateRepository: Repository<ExchangeRateEntity>,
   ) {
-    this.apiKey = configService.get('EXCHANGE_RATE_API_KEY');
+    this.apiKey = configService.get<string>('EXCHANGE_RATE_API_KEY') ?? '';
   }
 
   async fetchAndUpdateRates(): Promise<void> {
@@ -50,7 +50,7 @@ export class ExchangeRateFetcherService {
     // - Your own data provider
 
     // Mock implementation
-    const mockRates = {
+    const mockRates: Record<string, number> = {
       'USD-EUR': 0.92,
       'USD-GBP': 0.79,
       'EUR-USD': 1.09,

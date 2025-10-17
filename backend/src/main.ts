@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import 'reflect-metadata';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';

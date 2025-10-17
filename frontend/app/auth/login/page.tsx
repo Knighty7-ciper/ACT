@@ -34,7 +34,18 @@ export default function LoginPage() {
         },
       })
       if (error) throw error
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token && session.refresh_token) {
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token }),
+        })
+      }
+
       router.push("/dashboard")
+      router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
