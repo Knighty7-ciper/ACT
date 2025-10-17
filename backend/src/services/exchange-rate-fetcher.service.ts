@@ -15,7 +15,7 @@ export class ExchangeRateFetcherService {
     @InjectRepository(ExchangeRateEntity)
     private exchangeRateRepository: Repository<ExchangeRateEntity>,
   ) {
-    this.apiKey = configService.get('EXCHANGE_RATE_API_KEY');
+    this.apiKey = configService.get<string>('EXCHANGE_RATE_API_KEY') ?? '';
   }
 
   async fetchAndUpdateRates(): Promise<void> {

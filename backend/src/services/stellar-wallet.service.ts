@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { Keypair, Server, Networks, TransactionBuilder, BASE_FEE } from '@stellar/stellar-sdk';
+import Server, { Keypair, TransactionBuilder, BASE_FEE, Operation, Asset } from '@stellar/stellar-sdk';
 import { getStellarConfig, getStellarKeypair } from '../config/stellar.config';
 
 @Injectable()
@@ -47,12 +47,13 @@ export class StellarWalletService {
         fee: BASE_FEE,
         networkPassphrase: this.config.networkPassphrase,
       })
-        .addOperation({
-          destination: toPublicKey,
-          asset: StellarWalletService.nativeAsset(),
-          amount: amount,
-          type: 'payment',
-        })
+        .addOperation(
+          Operation.payment({
+            destination: toPublicKey,
+            asset: Asset.native(),
+            amount: amount,
+          }),
+        )
         .setNetworkPassphrase(this.config.networkPassphrase)
         .setTimeout(30)
         .build();
@@ -68,11 +69,6 @@ export class StellarWalletService {
     }
   }
 
-  private static nativeAsset() {
-    return {
-      type: 'native',
-    };
-  }
 
   async fundTestnetAccount(publicKey: string): Promise<boolean> {
     if (this.config.network !== 'testnet') {
