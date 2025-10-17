@@ -1,27 +1,66 @@
--- Transactions: common queries
--- 1) Create transaction
--- Params: $1 user_id, $2 wallet_id, $3 type, $4 from_currency, $5 to_currency, $6 from_amount, $7 to_amount, $8 fee, $9 description, $10 reference_number, $11 stellar_tx_hash, $12 metadata
-INSERT INTO transactions (
-  user_id, wallet_id, type, from_currency, to_currency, from_amount, to_amount, fee, description, reference_number, stellar_transaction_hash, metadata, status
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'pending'
-)
-RETURNING *;
+BEGIN;
 
--- 2) Update status + history
--- Params: $1 tx_id, $2 status, $3 reason
-WITH updated AS (
-  UPDATE transactions SET status = $2, updated_at = now(), completed_at = CASE WHEN $2='completed' THEN now() ELSE completed_at END
-  WHERE id = $1 RETURNING id
-)
-INSERT INTO transaction_status_history (transaction_id, status, reason)
-SELECT id, $2, $3 FROM updated
-RETURNING *;
+-- Ensure unique index for reference_number exists
+CREATE UNIQUE INDEX IF NOT EXISTS ux_transactions_reference_number
+  ON public.transactions (reference_number)
+  WHERE reference_number IS NOT NULL;
 
--- 3) Get by user (paged)
--- Params: $1 user_id, $2 limit, $3 offset
-SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3;
+CREATE OR REPLACE FUNCTION public.create_transaction_by_email(
+  p_user_email varchar,
+  p_wallet_currency varchar,
+  p_type varchar,
+  p_from_currency varchar,
+  p_to_currency varchar,
+  p_from_amount numeric,
+  p_to_amount numeric,
+  p_fee numeric DEFAULT NULL,
+  p_status varchar DEFAULT 'pending',
+  p_description text DEFAULT NULL,
+  p_reference_number varchar DEFAULT NULL,
+  p_stellar_transaction_hash varchar DEFAULT NULL,
+  p_metadata jsonb DEFAULT NULL,
+  p_completed boolean DEFAULT false
+) RETURNS public.transactions AS $$
+DECLARE
+  v_user_id uuid;
+  v_wallet_id uuid;
+  v_tx public.transactions;
+  v_completed_at timestamptz;
+BEGIN
+  SELECT id INTO v_user_id FROM public.users WHERE email = p_user_email;
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'User with email % not found', p_user_email USING ERRCODE = '22023';
+  END IF;
 
--- 4) Get by reference
--- Params: $1 reference_number
-SELECT * FROM transactions WHERE reference_number = $1;
+  IF p_wallet_currency IS NOT NULL THEN
+    SELECT id INTO v_wallet_id FROM public.wallets
+      WHERE user_id = v_user_id AND currency_code = p_wallet_currency
+      LIMIT 1;
+  END IF;
+
+  IF p_completed THEN
+    v_completed_at := now();
+  END IF;
+
+  INSERT INTO public.transactions (
+    user_id, wallet_id, type, from_currency, to_currency, from_amount, to_amount, fee, status, description, reference_number, stellar_transaction_hash, metadata, completed_at
+  ) VALUES (
+    v_user_id, v_wallet_id, p_type, p_from_currency, p_to_currency, p_from_amount, p_to_amount, p_fee, p_status, p_description, p_reference_number, p_stellar_transaction_hash, p_metadata, v_completed_at
+  )
+  ON CONFLICT (reference_number) DO UPDATE SET
+    status = EXCLUDED.status,
+    description = EXCLUDED.description,
+    stellar_transaction_hash = EXCLUDED.stellar_transaction_hash,
+    metadata = EXCLUDED.metadata,
+    completed_at = EXCLUDED.completed_at,
+    updated_at = now()
+  RETURNING * INTO v_tx;
+
+  RETURN v_tx;
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+-- Example
+-- SELECT create_transaction_by_email('demo@pesa-afrik.io','ACT','transfer','ACT','NGN',10,12000,0.01,'completed','Demo transfer','REF-DEMO-0002','{"channel":"seed"}', true);
+
+COMMIT;
