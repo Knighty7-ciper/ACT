@@ -43,6 +43,7 @@ export function ForexRateDisplay({
   return (
     <div
       className={`group relative overflow-hidden rounded-xl border-2 border-border bg-card p-6 transition-all hover:border-primary hover:shadow-2xl ${className}`}
+      style={style}
     >
       {/* Animated background glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 transition-opacity group-hover:opacity-100" />
