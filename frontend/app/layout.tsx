@@ -2,9 +2,10 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Playfair_Display } from "next/font/google"
+import { Playfair_Display, IBM_Plex_Sans, Barlow } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/lib/contexts/ThemeContext"
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -13,6 +14,9 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   weight: ["400", "700", "900"],
 })
+
+const ibmPlex = IBM_Plex_Sans({ subsets: ["latin"], variable: "--font-ibm-plex", weight: ["400", "600"] })
+const barlow = Barlow({ subsets: ["latin"], variable: "--font-barlow", weight: ["400", "600"] })
 
 export const metadata: Metadata = {
   title: "Pesa-Afrik - Pan-African Currency Exchange Platform",
@@ -35,12 +39,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} antialiased`}>
-        <Suspense fallback={null}>
-          {children}
-          <Toaster />
-        </Suspense>
+    <html lang="en" className="dark theme-binance">
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${ibmPlex.variable} ${barlow.variable} antialiased`}>
+        <ThemeProvider>
+          <Suspense fallback={null}>
+            {children}
+            <Toaster />
+          </Suspense>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
