@@ -1,64 +1,40 @@
--- Seed: demo transaction for demo@pesa-afrik.io
--- Idempotent and safe: only inserts if the demo user exists; upserts by reference_number
-
--- 1) Ensure a unique index exists for ON CONFLICT to work
-CREATE UNIQUE INDEX IF NOT EXISTS ux_transactions_reference_number
-  ON public.transactions (reference_number)
-  WHERE reference_number IS NOT NULL;
-
--- 2) Insert or update the demo transaction
-WITH u AS (
-  SELECT id AS user_id
-  FROM public.users
-  WHERE email = 'demo@pesa-afrik.io'
-),
-w AS (
-  SELECT id AS wallet_id
-  FROM public.wallets
-  WHERE user_id = (SELECT user_id FROM u)
-    AND currency_code = 'ACT'
-  LIMIT 1
-)
-INSERT INTO public.transactions (
-  id,
-  user_id,
-  wallet_id,
-  type,
-  from_currency,
-  to_currency,
-  from_amount,
-  to_amount,
-  fee,
-  status,
-  description,
-  reference_number,
-  stellar_transaction_hash,
-  metadata,
-  completed_at
-)
-SELECT
-  gen_random_uuid(),
-  u.user_id,
-  w.wallet_id,
-  'transfer',
-  'ACT',
-  'NGN',
-  10.00000000,
-  12000.00000000,
-  0.01000000,
-  'completed',
-  'Demo seed transfer',
-  'REF-DEMO-0001',
-  'TXHASHDEMO0001',
-  '{"channel":"seed"}'::jsonb,
-  now()
-FROM u
-LEFT JOIN w ON true
--- If the demo user doesn't exist, this SELECT yields no rows and nothing is inserted
-ON CONFLICT (reference_number) DO UPDATE SET
-  status = EXCLUDED.status,
+-- Admin, roles, news
+-- 1) Upsert role
+-- Params: $1 name, $2 description, $3 permissions, $4 is_active
+INSERT INTO roles (name, description, permissions, is_active)
+VALUES ($1,$2,COALESCE($3,''),COALESCE($4,true))
+ON CONFLICT (name) DO UPDATE SET
   description = EXCLUDED.description,
-  stellar_transaction_hash = EXCLUDED.stellar_transaction_hash,
-  metadata = EXCLUDED.metadata,
-  completed_at = EXCLUDED.completed_at,
-  updated_at = now();
+  permissions = EXCLUDED.permissions,
+  is_active = EXCLUDED.is_active,
+  updated_at = now()
+RETURNING *;
+
+-- 2) Assign role to user
+-- Params: $1 user_id, $2 role_name
+INSERT INTO user_roles (user_id, role_id)
+SELECT $1, r.id FROM roles r WHERE r.name = $2
+ON CONFLICT (user_id, role_id) DO NOTHING
+RETURNING *;
+
+-- 3) Upsert news category
+-- Params: $1 slug, $2 name, $3 description, $4 icon, $5 is_active
+INSERT INTO news_categories (slug, name, description, icon, is_active)
+VALUES ($1,$2,$3,$4,COALESCE($5,true))
+ON CONFLICT (slug) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  icon = EXCLUDED.icon,
+  is_active = EXCLUDED.is_active,
+  updated_at = now()
+RETURNING *;
+
+-- 4) Create news
+-- Params: $1 title, $2 content, $3 summary, $4 category_slug, $5 image_url, $6 source, $7 source_url, $8 is_published, $9 is_featured
+INSERT INTO news (title, content, summary, category_id, image_url, source, source_url, is_published, is_featured)
+VALUES (
+  $1, $2, $3,
+  (SELECT id FROM news_categories WHERE slug = $4),
+  $5, $6, $7, COALESCE($8,true), COALESCE($9,false)
+)
+RETURNING *;
