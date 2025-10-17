@@ -65,12 +65,12 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button variant="ghost" size="sm">
                   Login
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href="/auth/sign-up">
                 <Button size="sm">Register</Button>
               </Link>
             </>
