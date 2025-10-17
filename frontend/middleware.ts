@@ -8,7 +8,16 @@ export async function middleware(request: NextRequest) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+  // Ensure we only initialize Supabase when we have valid credentials
   if (!supabaseUrl || !supabaseAnonKey) {
+    return supabaseResponse
+  }
+  try {
+    // Validate URL format to avoid runtime crashes in edge middleware
+    // eslint-disable-next-line no-new
+    new URL(supabaseUrl)
+  } catch {
     return supabaseResponse
   }
 
