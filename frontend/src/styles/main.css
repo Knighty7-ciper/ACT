@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Barlow:wght@400;600&display=swap');
+@import "./variables.css";
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--binance-black);
+  color: var(--binance-light-gray);
+}
+
+@media (max-width: 768px) {
+  .binance-layout { padding: 0 16px; }
+  .header { padding: 12px; }
+}
