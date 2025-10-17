@@ -39,11 +39,15 @@ export const typeormConfig = (
         : false,
   } as Partial<TypeOrmModuleOptions>;
 
-  const url = configService.get<string>('DATABASE_URL');
+  const url =
+    configService.get<string>('DATABASE_URL') ||
+    configService.get<string>('POSTGRES_URL') ||
+    configService.get<string>('POSTGRES_URL_NON_POOLING');
   if (url) {
     return {
       type: 'postgres',
       url,
+      ssl: { rejectUnauthorized: false },
       ...common,
     } as TypeOrmModuleOptions;
   }
