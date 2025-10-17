@@ -128,7 +128,7 @@ export default async function HomePage() {
                   </span>
                 </div>
 
-                <h1 className="mb-6 font-serif text-7xl font-black leading-tight tracking-tight animate-slide-up sm:text-8xl">
+                <h1 className="mb-6 font-serif text-6xl font-black leading-tight tracking-tight animate-slide-up sm:text-7xl">
                   OFFICIAL AFRICAN
                   <br />
                   <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
@@ -310,7 +310,7 @@ export default async function HomePage() {
 
         <section className="border-b-4 border-border bg-gradient-to-r from-primary via-secondary to-accent py-24">
           <div className="container mx-auto px-6 text-center">
-            <h2 className="mb-6 font-serif text-7xl font-black text-white">START TRADING TODAY</h2>
+            <h2 className="mb-6 font-serif text-6xl font-black text-white">START TRADING TODAY</h2>
             <p className="mb-12 text-2xl font-medium text-white/90">
               Join thousands of users across Africa using Pesa-Afrik for secure currency exchange
             </p>
