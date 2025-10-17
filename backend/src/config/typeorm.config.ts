@@ -51,6 +51,7 @@ export const typeormConfig = (
       type: 'postgres',
       url,
       ssl: { rejectUnauthorized: false },
+      extra: { ssl: { rejectUnauthorized: false } },
       ...common,
     } as TypeOrmModuleOptions;
   }
