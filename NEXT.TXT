@@ -1,57 +1,19 @@
-AfriLink – Frontend Commit Review, Smoke Test & Landing Page (2025-10-16)
+Structure Plan (requested CRA-style mapping) — 2025-10-17
+- We will mirror the requested hierarchy inside Next.js by creating feature folders under frontend/components and aliasing paths to resemble src/components/*, while keeping app/ routes intact.
+- Steps:
+  1) Create wrapper directories: components/Layout, Currency, Wallet, Transaction, User, Admin, UI, FAQ with index exports.
+  2) Add CSS modules or co-located .css files matching requested names; preserve existing Tailwind/vars.
+  3) Add path aliases so imports like src/components/Wallet/WalletCard resolve to frontend/components/Wallet/WalletCard.
+  4) Do not create public/index.html (Next uses app/), but keep public/favicon.ico, manifest.json, robots.txt.
+- This keeps Next conventions while matching your expected structure.
 
-Commits after sync:
-- 189191d Add generated frontend file structure tree for review
+Env & Secrets Persistence
+- All Supabase and Postgres keys from chat are set as environment variables (secure, not committed). They will persist and be used automatically.
+- We will not commit secrets into .env in the repo for security; instead, provide .env.example with variable names only if needed.
 
-Changes:
-- Fixed case-sensitive imports:
-  - Renamed frontend/components/UI -> frontend/components/ui
-  - Renamed frontend/components/Admin -> frontend/components/admin
-  - Updated frontend/tsconfig.json paths: "@components/ui/*" -> "./components/ui/*"
-- Installed frontend deps with pnpm and ran production build for smoke test.
-
-Smoke test result:
-- Next.js compiled successfully, but prerender failed on /404 with error: "<Html> should not be imported outside of pages/_document".
-- Added TODO: Fix Next build error: Html used outside pages/_document during 404 prerender.
-
-Landing page:
-- app/page.tsx already implements a rich landing (hero, live ticker, stats, features, CTA). No further changes needed now.
-
-Next actions:
-- Investigate any accidental usage of next/document in app code or dependencies for 404 route; update to app-router compatible patterns.
-- Proceed with deployment config updates to use frontend/ as Next root.
-
-—
-
-Platform Status Update (2025-10-17)
-
-Environment & Dev Server:
-- Added pnpm-workspace.yaml; workspace install now succeeds.
-- Dev command running: "npm run dev" (frontend on http://localhost:3000). Proxy set to 3000.
-
-Config & Secrets:
-- Set Supabase envs: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
-- Set Postgres URLs/password (from Supabase). All stored as env vars (not in repo).
-
-Backend fixes:
-- Enabled decorators and metadata: backend/tsconfig.json (experimentalDecorators, emitDecoratorMetadata, useDefineForClassFields=false, strictPropertyInitialization=false).
-- Imported reflect-metadata in backend/src/main.ts.
-- Fixed Stellar SDK v12 usage in backend/src/services/stellar-wallet.service.ts (default Server import, Operation.payment, Asset.native).
-- Added typings and safety: @types/uuid, typed mockRates, safer guard logging, Express.User augmentation at backend/src/types/express.d.ts.
-- Status: backend watcher starts; peer warnings remain (@nestjs/typeorm@9 vs Nest 10) but non-blocking for dev.
-
-Frontend fixes:
-- Supabase SSR middleware configured (frontend/middleware.ts) with cookie handling.
-- Login flow updated to force refresh after push (frontend/app/auth/login/page.tsx) so session is picked up in Server Components.
-
-Known issue (Sign-in appears to "watch"/not proceed):
-- Likely session cookie/redirect config. Action items:
-  1) In Supabase Dashboard → Auth → URL Configuration: add http://localhost:3000 to Site URL and to Redirect URLs.
-  2) Ensure RLS policies allow authenticated access on profiles, wallets, transactions.
-  3) After sign-in, verify Network tab shows /auth/v1/token setting cookies (sb-access-token, sb-refresh-token). If blocked, check cookie domain/samesite.
-  4) Middleware already refreshes cookies; with router.refresh() added, the dashboard should load.
-
-Next steps:
-- Optional: bump @nestjs/typeorm to v10 to match Nest 10.
-- Add basic auth E2E check and surface toast on login errors.
-- Confirm DB schema column names match queries used in dashboard (profiles.id, wallets.user_id, etc.).
+TODOs created:
+- Map CRA-style structure to Next without breaking routes
+- Implement aliases + wrapper components
+- Add CSS files preserving styles
+- Update NEXT.TXT with plan (done)
+- Stabilize Supabase redirects/cookies (in progress)
