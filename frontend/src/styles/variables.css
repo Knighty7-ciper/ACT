@@ -1,0 +1,13 @@
+/* Binance Color Palette */
+:root {
+  --binance-gold: #f0b90b;
+  --binance-black: #0c0e12;
+  --binance-dark-gray: #2B3139;
+  --binance-light-gray: #EAECEF;
+  --binance-green: #0ECB81;
+  --binance-red: #F6465D;
+
+  /* Binance Font Stack */
+  --font-heading: 'IBM Plex Sans', sans-serif;
+  --font-body: 'Barlow', 'FF DIN', sans-serif;
+}

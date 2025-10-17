@@ -7,18 +7,28 @@ import { AnimatedCounter } from "@/components/animated-counter"
 import { createClient } from "@/lib/supabase/server"
 
 async function getMarketData() {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: currencies } = await supabase.from("currencies").select("*").eq("is_active", true).order("code")
+    const { data: currencies } = await supabase
+      .from("currencies")
+      .select("*")
+      .eq("is_active", true)
+      .order("code")
 
-  const { data: rates } = await supabase.from("exchange_rates").select("*").order("updated_at", { ascending: false })
+    const { data: rates } = await supabase
+      .from("exchange_rates")
+      .select("*")
+      .order("updated_at", { ascending: false })
 
-  const { count: userCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
+    const { count: userCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
 
-  const { count: transactionCount } = await supabase.from("transactions").select("*", { count: "exact", head: true })
+    const { count: transactionCount } = await supabase
+      .from("transactions")
+      .select("*", { count: "exact", head: true })
 
-  // Map currencies with real rates and flags
-  const currencyMap: Record<string, string> = {
+    // Map currencies with real rates and flags
+    const currencyMap: Record<string, string> = {
     NGN: "🇳🇬",
     KES: "🇰🇪",
     ZAR: "🇿🇦",
@@ -34,26 +44,37 @@ async function getMarketData() {
     GBP: "🇬🇧",
   }
 
-  const currenciesWithRates =
-    currencies?.map((currency) => {
-      const rate = rates?.find((r) => r.from_currency_code === "ACT" && r.to_currency_code === currency.code)
-      return {
-        code: currency.code,
-        name: currency.name,
-        symbol: currency.symbol,
-        flag: currencyMap[currency.code] || "🏳️",
-        rate: rate ? Number.parseFloat(rate.rate) : 1.0,
-        change: Math.random() * 4 - 2, // Percentage change
-      }
-    }) || []
+    const currenciesWithRates =
+      currencies?.map((currency) => {
+        const rate = rates?.find((r) => r.from_currency_code === "ACT" && r.to_currency_code === currency.code)
+        return {
+          code: currency.code,
+          name: currency.name,
+          symbol: currency.symbol,
+          flag: currencyMap[currency.code] || "🏳️",
+          rate: rate ? Number.parseFloat(rate.rate) : 1.0,
+          change: Math.random() * 4 - 2,
+        }
+      }) || []
 
-  return {
-    currencies: currenciesWithRates,
-    stats: {
-      totalUsers: userCount || 0,
-      totalTransactions: transactionCount || 0,
-      actPrice: 1.0,
-    },
+    return {
+      currencies: currenciesWithRates,
+      stats: {
+        totalUsers: userCount || 0,
+        totalTransactions: transactionCount || 0,
+        actPrice: 1.0,
+      },
+    }
+  } catch (e) {
+    return {
+      currencies: [
+        { code: "NGN", name: "Nigerian Naira", symbol: "₦", flag: "🇳🇬", rate: 1200, change: 0.5 },
+        { code: "KES", name: "Kenyan Shilling", symbol: "Ksh", flag: "🇰🇪", rate: 150, change: -0.3 },
+        { code: "ZAR", name: "South African Rand", symbol: "R", flag: "🇿🇦", rate: 18.5, change: 1.1 },
+        { code: "GHS", name: "Ghanaian Cedi", symbol: "₵", flag: "🇬🇭", rate: 12.3, change: -0.7 },
+      ],
+      stats: { totalUsers: 0, totalTransactions: 0, actPrice: 1.0 },
+    }
   }
 }
 

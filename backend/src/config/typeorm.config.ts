@@ -39,13 +39,36 @@ export const typeormConfig = (
         : false,
   } as Partial<TypeOrmModuleOptions>;
 
-  const url = configService.get<string>('DATABASE_URL');
+  const url =
+    configService.get<string>('DATABASE_URL') ||
+    process.env.DATABASE_URL ||
+    configService.get<string>('POSTGRES_URL') ||
+    process.env.POSTGRES_URL ||
+    configService.get<string>('POSTGRES_URL_NON_POOLING') ||
+    process.env.POSTGRES_URL_NON_POOLING;
   if (url) {
-    return {
-      type: 'postgres',
-      url,
-      ...common,
-    } as TypeOrmModuleOptions;
+    try {
+      const parsed = new URL(url);
+      return {
+        type: 'postgres',
+        host: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 5432,
+        username: decodeURIComponent(parsed.username),
+        password: decodeURIComponent(parsed.password),
+        database: parsed.pathname.replace(/^\//, ''),
+        ssl: { rejectUnauthorized: false },
+        extra: { ssl: { rejectUnauthorized: false } },
+        ...common,
+      } as TypeOrmModuleOptions;
+    } catch {
+      return {
+        type: 'postgres',
+        url,
+        ssl: { rejectUnauthorized: false },
+        extra: { ssl: { rejectUnauthorized: false } },
+        ...common,
+      } as TypeOrmModuleOptions;
+    }
   }
 
   return {

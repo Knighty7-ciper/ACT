@@ -25,8 +25,8 @@ export const getStellarConfig = (): StellarConfig => {
     publicKey,
     networkPassphrase:
       network === 'public'
-        ? Networks.PUBLIC_NETWORK_PASSPHRASE
-        : Networks.TESTNET_NETWORK_PASSPHRASE,
+        ? Networks.PUBLIC
+        : Networks.TESTNET,
   };
 };
 
