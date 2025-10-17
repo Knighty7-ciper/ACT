@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${NODE_ENV:-development}" == "production" && "${FORCE_DB_SEED:-}" != "true" ]]; then
+  echo "Refusing to seed in production without FORCE_DB_SEED=true" >&2
+  exit 1
+fi
+
 DB_URL="${DATABASE_URL:-${POSTGRES_URL:-${POSTGRES_URL_NON_POOLING:-}}}"
 if [[ -z "${DB_URL}" ]]; then
   echo "DATABASE_URL/POSTGRES_URL not set" >&2
