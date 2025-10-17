@@ -22,3 +22,36 @@ Next actions:
 - Proceed with deployment config updates to use frontend/ as Next root.
 
 —
+
+Platform Status Update (2025-10-17)
+
+Environment & Dev Server:
+- Added pnpm-workspace.yaml; workspace install now succeeds.
+- Dev command running: "npm run dev" (frontend on http://localhost:3000). Proxy set to 3000.
+
+Config & Secrets:
+- Set Supabase envs: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
+- Set Postgres URLs/password (from Supabase). All stored as env vars (not in repo).
+
+Backend fixes:
+- Enabled decorators and metadata: backend/tsconfig.json (experimentalDecorators, emitDecoratorMetadata, useDefineForClassFields=false, strictPropertyInitialization=false).
+- Imported reflect-metadata in backend/src/main.ts.
+- Fixed Stellar SDK v12 usage in backend/src/services/stellar-wallet.service.ts (default Server import, Operation.payment, Asset.native).
+- Added typings and safety: @types/uuid, typed mockRates, safer guard logging, Express.User augmentation at backend/src/types/express.d.ts.
+- Status: backend watcher starts; peer warnings remain (@nestjs/typeorm@9 vs Nest 10) but non-blocking for dev.
+
+Frontend fixes:
+- Supabase SSR middleware configured (frontend/middleware.ts) with cookie handling.
+- Login flow updated to force refresh after push (frontend/app/auth/login/page.tsx) so session is picked up in Server Components.
+
+Known issue (Sign-in appears to "watch"/not proceed):
+- Likely session cookie/redirect config. Action items:
+  1) In Supabase Dashboard → Auth → URL Configuration: add http://localhost:3000 to Site URL and to Redirect URLs.
+  2) Ensure RLS policies allow authenticated access on profiles, wallets, transactions.
+  3) After sign-in, verify Network tab shows /auth/v1/token setting cookies (sb-access-token, sb-refresh-token). If blocked, check cookie domain/samesite.
+  4) Middleware already refreshes cookies; with router.refresh() added, the dashboard should load.
+
+Next steps:
+- Optional: bump @nestjs/typeorm to v10 to match Nest 10.
+- Add basic auth E2E check and surface toast on login errors.
+- Confirm DB schema column names match queries used in dashboard (profiles.id, wallets.user_id, etc.).
