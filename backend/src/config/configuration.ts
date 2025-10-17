@@ -1,9 +1,9 @@
 export default () => ({
-  port: parseInt(process.env.BACKEND_PORT, 10) || 3001,
+  port: parseInt(process.env.BACKEND_PORT || '3001', 10),
   environment: process.env.NODE_ENV || 'development',
   database: {
     host: process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
+    port: parseInt(process.env.DATABASE_PORT || '5432', 10),
     username: process.env.DATABASE_USER || 'postgres',
     password: process.env.DATABASE_PASSWORD || 'postgres',
     database: process.env.DATABASE_NAME || 'african_currency',
@@ -26,7 +26,7 @@ export default () => ({
   },
   email: {
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT, 10) || 587,
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
     user: process.env.SMTP_USER,
     password: process.env.SMTP_PASSWORD,
     senderEmail: process.env.SENDER_EMAIL,
