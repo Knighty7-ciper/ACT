@@ -9,6 +9,7 @@ interface ForexRateDisplayProps {
   flag: string
   change: number
   className?: string
+  style?: React.CSSProperties
 }
 
 export function ForexRateDisplay({
@@ -18,6 +19,7 @@ export function ForexRateDisplay({
   flag,
   change,
   className = "",
+  style,
 }: ForexRateDisplayProps) {
   const [displayRate, setDisplayRate] = useState(rate)
   const [isAnimating, setIsAnimating] = useState(false)
